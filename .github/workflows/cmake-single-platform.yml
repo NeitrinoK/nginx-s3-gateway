@@ -24,7 +24,7 @@ jobs:
     - name: Checkout NGINX Source
       if: hashFiles('nginx') == ''
       run: |
-        git clone --depth 1 -b release-1.26 https://github.com/nginx/nginx.git
+        git clone --depth 1 -b stable-1.28 https://github.com/nginx/nginx.git
       # Note: Adjust NGINX version as needed
 
     - name: Fix Library Path in Config
