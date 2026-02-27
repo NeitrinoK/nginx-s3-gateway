@@ -81,7 +81,7 @@ jobs:
         sudo cp nginx/objs/ngx_http_s3_gateway_c_module.so /usr/lib/nginx/modules/
         which nginx
         nginx -V
-        sudo nginx -t -c examples/nginx-c-module-snippet.conf || echo "Config test skipped - requires env vars"
+        sudo nginx -t -c "$GITHUB_WORKSPACE/examples/nginx-c-module-snippet.conf" || echo "Config test skipped - requires env vars"
     
     - name: Run Perl Tests (if present)
       run: |
