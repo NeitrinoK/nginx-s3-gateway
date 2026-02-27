@@ -30,7 +30,8 @@ jobs:
     - name: Fix Library Path in Config
       run: |
         # Update config if needed for Ubuntu paths
-        sed -i 's|-L/opt/local/lib|-L/usr/lib/x86_64-linux-gnu|g' nginx-s3-gateway_c/config || true
+        ls -l .
+        sed -i 's|-L/opt/local/lib|-L/usr/lib/x86_64-linux-gnu|g' config || true
 
     - name: Configure NGINX with Dynamic Module
       run: |
