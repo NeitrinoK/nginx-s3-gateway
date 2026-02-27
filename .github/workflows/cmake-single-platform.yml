@@ -85,7 +85,7 @@ jobs:
       run: |
         echo "$PWD"
         ls -l .
-        if [ -f "nginx-s3-gateway_c/test/perl/run.sh" ]; then
-          bash nginx-s3-gateway_c/test/perl/run.sh || echo "Tests require S3 setup"
+        if [ -f "test/perl/run.sh" ]; then
+          bash test/perl/run.sh || echo "Tests require S3 setup"
         fi
         echo "Test environment ready"
