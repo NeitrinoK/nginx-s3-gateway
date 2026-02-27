@@ -79,6 +79,8 @@ jobs:
     - name: Install Module and Test Config
       run: |
         sudo cp nginx/objs/ngx_http_s3_gateway_c_module.so /usr/lib/nginx/modules/
+        which nginx
+        nginx -V
         sudo nginx -t -c nginx-s3-gateway_c/examples/nginx-c-module-snippet.conf || echo "Config test skipped - requires env vars"
     
     - name: Run Perl Tests (if present)
