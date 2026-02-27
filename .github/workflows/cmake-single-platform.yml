@@ -35,6 +35,7 @@ jobs:
 
     - name: Configure NGINX with Dynamic Module
       run: |
+        ls "$GITHUB_WORKSPACE"
         cd nginx
         ./auto/configure \
           --with-compat \
