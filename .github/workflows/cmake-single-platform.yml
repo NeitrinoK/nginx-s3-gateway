@@ -40,7 +40,7 @@ jobs:
         cd nginx
         ./auto/configure \
           --with-compat \
-          --add-dynamic-module="$GITHUB_WORKSPACE/../nginx-s3-gateway_cnginx-s3-gateway_c" \
+          --add-dynamic-module="$GITHUB_WORKSPACE" \
           --with-http_ssl_module \
           --without-http_gzip_module
         make modules
