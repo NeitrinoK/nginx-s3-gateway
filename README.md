@@ -1,17 +1,17 @@
 # nginx-s3-gateway_с
 
-`nginx-s3-gateway_с` — HTTP-модуль NGINX на C для S3-шлюза.  
-Модуль формирует S3 URI, генерирует AWS SigV2/SigV4 подписи, управляет внутренними ветками `location`, фильтрует ответы листинга и обновляет временные AWS credentials.
+nginx-s3-gateway_c is an NGINX HTTP module written in C for S3 gateway functionality.
+The module generates S3 URIs, creates AWS SigV2/SigV4 signatures, manages internal location branches, filters listing responses, and refreshes temporary AWS credentials.
 
-## Что настраивается в модуле
+## Module Configuration Options
 
-### Контент-режимы (`s3_gateway_content`)
+### Content Modes (s3_gateway_content)
 - `redirectToS3`
 - `trailslashControl`
 - `loadContent`
 - `fetchCredentials`
 
-### HTTP-переменные модуля
+### Module HTTP Variables
 - `$s3auth`
 - `$awsSessionToken`
 - `$s3uri`
@@ -19,20 +19,20 @@
 - `$awsDate`
 - `$awsPayloadHash`
 
-### Фильтры
+### Filters
 - `s3_gateway_header_filter on;`
 - `s3_gateway_body_filter on;`
 
-## Требования
+## Build requirements
 
-- исходники NGINX (в этом репозитории: `nginx/`)
-- компилятор C и `make`
+- NGINX source code (in this repository: nginx/)
+- C compiler and make
 - OpenSSL (`libcrypto`, `libssl`)
 - libcurl
 
-Примечание: в `nginx-s3-gateway_с/config` зашит `-L/opt/local/lib`. Если библиотеки лежат в другом пути, поправьте `config`.
+Note: nginx-s3-gateway_c/config hardcodes -L/opt/local/lib. If libraries are in a different path, update config.
 
-## Сборка динамического модуля
+## Building the Dynamic Module
 
 ```bash
 cd nginx
@@ -40,10 +40,10 @@ cd nginx
 make modules
 ```
 
-Результат сборки:
+Build result:
 - `nginx/objs/ngx_http_s3_gateway_c_module.so`
 
-## Обязательные переменные окружения
+## Required Environment Variables
 
 - `S3_BUCKET_NAME`
 - `S3_SERVER`
@@ -53,7 +53,7 @@ make modules
 - `AWS_SIGS_VERSION` (`2` или `4`)
 - `S3_STYLE` (`path` или `virtual`)
 
-## Опциональные переменные окружения
+## Optional Environment Variables
 
 - `S3_SERVICE` (по умолчанию `s3`)
 - `DEBUG`
@@ -64,12 +64,12 @@ make modules
 - `HEADER_PREFIXES_TO_STRIP`
 - `HEADER_PREFIXES_ALLOWED`
 
-### Статические credentials (если используете их)
+### Static Credentials (if using them)
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_SESSION_TOKEN`
 
-### Временные credentials (если используете metadata/STS)
+### Temporary Credentials (if using metadata/STS)
 - `AWS_CREDENTIALS_TEMP_FILE`
 - `TMPDIR`
 - `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`
@@ -81,9 +81,9 @@ make modules
 - `AWS_STS_REGIONAL_ENDPOINTS`
 - `AWS_REGION`
 
-## Минимальная схема nginx.conf
+## Minimal nginx.conf Schema
 
-В `main`-контексте:
+In main context:
 
 ```nginx
 load_module modules/ngx_http_s3_gateway_c_module.so;
@@ -118,27 +118,27 @@ env AWS_STS_REGIONAL_ENDPOINTS;
 env AWS_REGION;
 ```
 
-В `http`/`server`-контексте:
+In http/server context:
 
 ```nginx
-# путь запроса без query/fragment
+# request path without query/fragment
 map $request_uri $uri_path {
     "~^(?P<path>.*?)(\\?.*)*$" $path;
 }
 
-# значения нужны для логики index/listing
+# values needed for index/listing logic
 set $forIndexPage true;
 set $indexIsEmpty true;
 
-# для OSS обычно 0, для Plus можно 1 с keyval
+# usually 0 for OSS, can be 1 with keyval for Plus
 set $cache_signing_key_enabled 0;
 set $cache_instance_credentials_enabled 0;
 
-# заглушки под кэш-значения (или keyval в NGINX Plus)
+# stubs for cache values (or keyval in NGINX Plus)
 map $request_uri $instance_credential_json { default ""; }
 map $request_uri $signing_key_hash { default ""; }
 
-# Host для подписи/проксирования
+# Host for signing/proxying
 # virtual style: <bucket>.<S3_SERVER>
 # path style: <S3_SERVER>
 set $s3_host "example-bucket.s3.us-east-1.amazonaws.com";
@@ -182,9 +182,9 @@ location @trailslashControl {
 }
 ```
 
-В примере выше предполагается, что upstream `storage_urls` уже объявлен в `http`-контексте.
+The example above assumes storage_urls upstream is already declared in the http context.
 
-Для SigV2 и SigV4 добавляйте соответствующие заголовки:
+For SigV2 and SigV4, add corresponding headers:
 
 - SigV2:
 ```nginx
@@ -197,17 +197,17 @@ proxy_set_header x-amz-date $awsDate;
 proxy_set_header x-amz-content-sha256 $awsPayloadHash;
 ```
 
-Полный пример блоков `location`:  
+Full example location blocks: 
 `nginx-s3-gateway_с/examples/nginx-c-module-snippet.conf`
 
-## Запуск NGINX
+## Running NGINX
 
 ```bash
 cd nginx
 objs/nginx -p "$PWD" -c conf/nginx.conf
 ```
 
-Перезагрузка/остановка:
+Reload/stop:
 
 ```bash
 cd nginx
@@ -215,7 +215,7 @@ objs/nginx -p "$PWD" -s reload
 objs/nginx -p "$PWD" -s stop
 ```
 
-## Быстрая проверка
+## Quick Test
 
 ```bash
 curl -i http://127.0.0.1/health
@@ -224,20 +224,20 @@ curl -I http://127.0.0.1/some/prefix/
 curl -i -X POST http://127.0.0.1/some/object.txt
 ```
 
-Ожидаемо:
-- `GET/HEAD` обрабатываются через S3-маршруты
-- не-read-only методы получают `405`
+Expected:
+- `GET/HEAD` handled via S3 routes
+- non-read-only methods return `405`
 
-## Тесты
+## Tests
 
 ```bash
 bash nginx-s3-gateway_с/test/perl/run.sh
 ```
 
-Описание тестов: `nginx-s3-gateway_с/test/perl/README.md`
+Test description: `nginx-s3-gateway_с/test/perl/README.md`
 
-## Ограничения
+## Limitations
 
-- Модуль ориентирован на read-only сценарии (`GET`/`HEAD`).
-- Запросы к metadata/STS выполняются синхронно через libcurl.
-- Значения дат для подписи инициализируются при старте или reload NGINX.
+- Module focused on read-only scenarios  (`GET`/`HEAD`).
+- Metadata/STS requests executed synchronously via libcurl.
+- Date values for signing initialized at NGINX start or reload.
